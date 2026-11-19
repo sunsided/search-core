@@ -1,0 +1,22 @@
+[package]
+name = "search-core"
+description = "Small shared traits for planning and search crates"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Markus Mayer <widemeadows@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/sunsided/search-core"
+readme = "README.md"
+keywords = ["search", "planning", "traits", "pathfinding"]
+categories = ["algorithms", "no-std"]
+
+[dependencies]
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing_docs_in_private_items = "warn"
