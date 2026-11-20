@@ -11,7 +11,20 @@ readme = "README.md"
 keywords = ["search", "planning", "traits", "pathfinding"]
 categories = ["algorithms", "no-std"]
 
+[features]
+default = ["alloc"]
+## `Heuristic` for `Box<H>`.
+alloc = []
+## The checked float cost `NonNegF64`.
+float = []
+
 [dependencies]
+
+[dev-dependencies]
+proptest = "1.12"
+
+[package.metadata.docs.rs]
+all-features = true
 
 [lints.rust]
 missing_docs = "warn"
