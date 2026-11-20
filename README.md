@@ -17,6 +17,11 @@ Implemented:
   compile time), stored as `u64`.
 - `NonNegF64` (feature `float`): an `f64` cost that rejects NaN and negative values, so it
   can be `Ord`. Sound, but rounds; prefer integers or `Decimal` for exact results.
+- `WideMul`: the product of two costs in a wider type (`u8`–`u64` into the next wider
+  integer, `usize` into `u128`, `u128` into a `(high, low)` 256-bit pair, `Decimal<K>` into
+  `u128`, `NonNegF64` into itself) and the distance `abs_diff`, exact for every integer
+  and `Decimal` input. For comparing cost ratios by cross-multiplication; a separate
+  trait, so `Cost` is unchanged.
 - `Heuristic<S, C = u32>` with `&mut self` workspaces, forwarding impls for `&mut H` and
   `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero`.
 - `Goal<S>`, implemented for `Fn(&S) -> bool`.

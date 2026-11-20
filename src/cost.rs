@@ -1,15 +1,18 @@
 //! Scalar path costs: the [`Cost`] trait, its integer implementations, the fixed-point
-//! [`Decimal`] and, behind the `float` feature, the checked float `NonNegF64`.
+//! [`Decimal`] and, behind the `float` feature, the checked float `NonNegF64`; and the exact
+//! cost-by-cost product [`WideMul`].
 
 mod decimal;
 #[cfg(feature = "float")]
 mod float;
+mod wide;
 
 use core::ops::Add;
 
 pub use decimal::Decimal;
 #[cfg(feature = "float")]
 pub use float::NonNegF64;
+pub use wide::WideMul;
 
 /// A non-negative scalar edge or path cost.
 ///

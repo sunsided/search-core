@@ -8,6 +8,8 @@
 //! - [`Cost`]: a non-negative, totally ordered scalar path cost. Implemented for the unsigned
 //!   integers (the ecosystem default is `u32`), the fixed-point [`Decimal`] with scale `10^K`,
 //!   and, behind the `float` feature, the checked float `NonNegF64`.
+//! - [`WideMul`]: the exact product of two costs in a wider type, for comparing cost ratios
+//!   by cross-multiplication. Separate from [`Cost`], so cost types without it still work.
 //! - [`Heuristic`]: a cost-to-go estimate with a mutable workspace, plus [`heuristic_fn`] for
 //!   closures and the blind heuristic [`Zero`].
 //! - [`Goal`]: a goal test, implemented for closures.
@@ -84,6 +86,6 @@ mod heuristic;
 pub use budget::Budget;
 #[cfg(feature = "float")]
 pub use cost::NonNegF64;
-pub use cost::{Cost, Decimal};
+pub use cost::{Cost, Decimal, WideMul};
 pub use goal::Goal;
 pub use heuristic::{Heuristic, HeuristicFn, Zero, heuristic_fn};
