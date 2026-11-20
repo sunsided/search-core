@@ -3,7 +3,7 @@
 use core::cmp::Ordering;
 use core::fmt;
 use core::hash::{Hash, Hasher};
-use core::ops::Add;
+use core::ops::{Add, Mul};
 
 use super::Cost;
 
@@ -99,6 +99,15 @@ impl Add for NonNegF64 {
 
     fn add(self, other: Self) -> Self {
         Self(self.0 + other.0)
+    }
+}
+
+impl Mul for NonNegF64 {
+    type Output = Self;
+
+    /// The `f64` product, with `0 · ∞ = 0` instead of NaN, so the invariant holds.
+    fn mul(self, other: Self) -> Self {
+        crate::WideMul::wide_mul(self, other)
     }
 }
 

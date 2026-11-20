@@ -10,6 +10,8 @@
 //!   and, behind the `float` feature, the checked float `NonNegF64`.
 //! - [`WideMul`]: the exact product of two costs in a wider type, for comparing cost ratios
 //!   by cross-multiplication. Separate from [`Cost`], so cost types without it still work.
+//! - [`ExactArith`] (feature `alloc`): costs into an exact number type ([`BigUint`]) for
+//!   sums of products and longer products; also separate from [`Cost`].
 //! - [`Heuristic`]: a cost-to-go estimate with a mutable workspace, plus [`heuristic_fn`] for
 //!   closures and the blind heuristic [`Zero`].
 //! - [`Goal`]: a goal test, implemented for closures.
@@ -86,6 +88,8 @@ mod heuristic;
 pub use budget::Budget;
 #[cfg(feature = "float")]
 pub use cost::NonNegF64;
+#[cfg(feature = "alloc")]
+pub use cost::{BigUint, ExactArith, ExactNumber};
 pub use cost::{Cost, Decimal, WideMul};
 pub use goal::Goal;
 pub use heuristic::{Heuristic, HeuristicFn, Zero, heuristic_fn};

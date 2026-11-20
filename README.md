@@ -22,6 +22,10 @@ Implemented:
   `u128`, `NonNegF64` into itself) and the distance `abs_diff`, exact for every integer
   and `Decimal` input. For comparing cost ratios by cross-multiplication; a separate
   trait, so `Cost` is unchanged.
+- `ExactArith` (feature `alloc`): converts a cost into an exact number type
+  (`ExactNumber`: `BigUint` for the integers and `Decimal`, `NonNegF64` itself) with `+`,
+  `*` and a distance, for sums of products and longer products. Also separate from `Cost`.
+  `NonNegF64` gains `Mul` (with `0 · ∞ = 0`).
 - `Heuristic<S, C = u32>` with `&mut self` workspaces, forwarding impls for `&mut H` and
   `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero`.
 - `Goal<S>`, implemented for `Fn(&S) -> bool`.
