@@ -1,9 +1,10 @@
 # Migrating the sibling crates to search-core
 
 How each planning/search crate would adopt `search-core`. Nothing here has been applied yet;
-the siblings still define their own traits. Every mapping below is exercised by a stand-in in
-`tests/it/` (one module per sibling), so it is known to compile under the orphan rules of a
-downstream crate.
+the siblings still define their own traits. `tests/it/` has a stand-in module for
+heuristic-search (including `NonNegF64` costs and the weighted key), stochastic-search and
+multiobjective-search, so those mappings are known to compile under the orphan rules of a
+downstream crate. planning-heuristics needs no stand-in: its trait is identical.
 
 The general pattern: depend on `search-core`, delete the local trait, and re-export the
 shared one from the crate root (`pub use search_core::{Goal, Heuristic, ...};`) so existing
@@ -15,7 +16,7 @@ shared one from the crate root (`pub use search_core::{Goal, Heuristic, ...};`) 
 |---|---|---|
 | `Cost` (`ZERO`, `cmp_cost`, `times`, `saturating_add`) | `Cost` | `cmp_cost` becomes `Ord::cmp`; `times` becomes `saturating_times` |
 | `Cost for u32, u64, usize` | same | none |
-| `Cost for i64` | dropped | **break**: signed costs void the optimality guarantees; use `u64` |
+| `Cost for i64` | dropped | **break**: signed costs void the optimality guarantees; use `u64` (only `cost.rs` uses `i64`) |
 | `Cost for f64` | `NonNegF64` (feature `float`) | **break**: raw `f64` is not `Ord`; wrap edge costs with `NonNegF64::new` |
 | `Heuristic<S, C>` | `Heuristic<S, C = u32>` | none (adds the `u32` default) |
 | `heuristic_fn`, `HeuristicFn`, `Zero` | same | none; `Zero` covers every `Cost` |

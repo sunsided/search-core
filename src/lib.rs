@@ -7,7 +7,7 @@
 //!
 //! - [`Cost`]: a non-negative, totally ordered scalar path cost. Implemented for the unsigned
 //!   integers (the ecosystem default is `u32`), the fixed-point [`Decimal`] with scale `10^K`,
-//!   and, behind the `float` feature, the checked float [`NonNegF64`].
+//!   and, behind the `float` feature, the checked float `NonNegF64`.
 //! - [`Heuristic`]: a cost-to-go estimate with a mutable workspace, plus [`heuristic_fn`] for
 //!   closures and the blind heuristic [`Zero`].
 //! - [`Goal`]: a goal test, implemented for closures.
@@ -28,7 +28,7 @@
 //! ## Features
 //!
 //! - `alloc` (default): `Heuristic` for `Box<H>`.
-//! - `float`: the [`NonNegF64`] cost.
+//! - `float`: the `NonNegF64` cost.
 //!
 //! The crate is `no_std` in every configuration.
 //!

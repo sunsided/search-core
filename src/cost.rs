@@ -1,5 +1,5 @@
 //! Scalar path costs: the [`Cost`] trait, its integer implementations, the fixed-point
-//! [`Decimal`] and, behind the `float` feature, the checked float [`NonNegF64`].
+//! [`Decimal`] and, behind the `float` feature, the checked float `NonNegF64`.
 
 mod decimal;
 #[cfg(feature = "float")]
@@ -25,11 +25,11 @@ pub use float::NonNegF64;
 /// - **`+` follows the underlying integer.** For the integer types and [`Decimal`], an
 ///   overflowing `+` panics in debug builds and wraps in release builds, exactly like the
 ///   primitive. Pick a type wide enough for the longest path, or use
-///   [`Cost::saturating_add`] where a sum only serves as a priority. [`NonNegF64`] never
+///   [`Cost::saturating_add`] where a sum only serves as a priority. `NonNegF64` never
 ///   overflows; it reaches infinity instead.
 ///
 /// Implemented for `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, [`Decimal`] and (feature
-/// `float`) [`NonNegF64`].
+/// `float`) `NonNegF64`.
 ///
 /// # Examples
 ///

@@ -189,6 +189,38 @@ fn decimal_costs() {
     assert_eq!(found.unwrap().to_string(), "1.25");
 }
 
+/// The search runs on checked float costs (feature `float`).
+#[cfg(feature = "float")]
+#[test]
+fn float_costs() {
+    let cost = |value| search_core::NonNegF64::new(value).expect("valid cost");
+    let graph = BTreeMap::from([
+        (0, vec![(1, cost(2.5)), (2, cost(0.5))]),
+        (2, vec![(1, cost(1.0))]),
+    ]);
+
+    let found = astar(&graph, 0, &Target(1), Zero, |_: &Stats| false);
+
+    assert_eq!(found.map(search_core::NonNegF64::get), Some(1.5));
+}
+
+/// The weighted A* key `den * g + num * h` saturates instead of overflowing.
+#[test]
+fn weighted_key_saturates() {
+    /// Weighted A* key with weight `num / den`.
+    fn key<C: Cost>(g: C, h: C, num: u32, den: u32) -> C {
+        g.saturating_times(den)
+            .saturating_add(h.saturating_times(num))
+    }
+
+    assert_eq!(key(4_u32, 3, 3, 2), 17);
+    assert_eq!(key(u32::MAX / 2, 1, 1, 3), u32::MAX);
+    assert_eq!(
+        key(Decimal::<1>::from_raw(5), Decimal::from_raw(5), 2, 1),
+        Decimal::from_raw(15)
+    );
+}
+
 proptest! {
     /// A* with the blind heuristic finds the same cost as Bellman-Ford on random graphs.
     #[test]
