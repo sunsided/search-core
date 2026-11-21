@@ -13,7 +13,7 @@ categories = ["algorithms", "no-std"]
 
 [features]
 default = ["alloc"]
-## `Heuristic` for `Box<H>`.
+## `Heuristic` for `Box<H>`, and `ExactArith` with `BigUint`.
 alloc = []
 ## The checked float cost `NonNegF64`.
 float = []

@@ -1,5 +1,13 @@
 # search-core
 
+[![crates.io](https://img.shields.io/crates/v/search-core.svg)](https://crates.io/crates/search-core)
+[![docs.rs](https://img.shields.io/docsrs/search-core)](https://docs.rs/search-core)
+[![CI](https://github.com/sunsided/search-core/actions/workflows/ci.yml/badge.svg)](https://github.com/sunsided/search-core/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sunsided/search-core/graph/badge.svg)](https://codecov.io/gh/sunsided/search-core)
+[![MSRV](https://img.shields.io/crates/msrv/search-core)](https://crates.io/crates/search-core)
+[![License](https://img.shields.io/crates/l/search-core)](https://github.com/sunsided/search-core#license)
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+
 Small shared traits for planning and search crates.
 
 A heuristic, goal test or budget written once against these traits works with every
@@ -33,10 +41,16 @@ Implemented:
 
 Not included, on purpose: successor generation (`Successors`, `Graph`, `Mdp`), statistics
 and limits structs, and Pareto dominance. Their shapes differ between the sibling crates, or
-only one crate uses them. See [MIGRATION.md](MIGRATION.md) for how each sibling would adopt
+only one crate uses them. See [MIGRATION.md](https://github.com/sunsided/search-core/blob/main/MIGRATION.md) for how each sibling would adopt
 this crate.
 
 Pre-release: version 0.0.0 reserves the name, and the API may still change before 0.1.
+
+## Install
+
+```sh
+cargo add search-core
+```
 
 ## Example
 
@@ -50,6 +64,22 @@ let cost = Decimal::<2>::from_raw(125) + Decimal::from_int(2).unwrap();
 assert_eq!(cost.to_string(), "3.25");
 assert!(Decimal::<2>::ZERO < cost);
 ```
+
+## Features
+
+- `alloc` (default): `Heuristic` for `Box<H>`, and `ExactArith` with `BigUint`.
+- `float`: the checked float cost `NonNegF64`.
+
+Without default features the crate needs neither `std` nor `alloc`.
+
+## MSRV
+
+Rust 1.85 (edition 2024). The minimum supported Rust version may be raised in a minor
+release when a dependency or a language feature calls for it.
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/sunsided/search-core/blob/main/CONTRIBUTING.md).
 
 ## License
 
