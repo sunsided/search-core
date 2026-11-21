@@ -18,6 +18,7 @@ shared one from the crate root (`pub use search_core::{Goal, Heuristic, ...};`) 
 | `Cost for u32, u64, usize` | same | none |
 | `Cost for i64` | dropped | **break**: signed costs void the optimality guarantees; use `u64` (only `cost.rs` uses `i64`) |
 | `Cost for f64` | `NonNegF64` (feature `float`) | **break**: raw `f64` is not `Ord`; wrap edge costs with `NonNegF64::new` |
+| `CostExt` (`saturating_sub`, `to_f64`) | `CostExt` | none; delete the local trait and `pub use search_core::CostExt` |
 | `Heuristic<S, C>` | `Heuristic<S, C = u32>` | none (adds the `u32` default) |
 | `heuristic_fn`, `HeuristicFn`, `Zero` | same | none; `Zero` covers every `Cost` |
 | `Goal<S>` | `Goal<S>` | none |

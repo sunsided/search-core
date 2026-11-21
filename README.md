@@ -25,6 +25,9 @@ Implemented:
   compile time), stored as `u64`.
 - `NonNegF64` (feature `float`): an `f64` cost that rejects NaN and negative values, so it
   can be `Ord`. Sound, but rounds; prefer integers or `Decimal` for exact results.
+- `CostExt`: `saturating_sub` and a possibly rounding `to_f64` (raw units for `Decimal`)
+  for priorities that subtract or divide costs, such as anytime and bidirectional searches.
+  A separate trait, implemented for every cost above.
 - `WideMul`: the product of two costs in a wider type (`u8`–`u64` into the next wider
   integer, `usize` into `u128`, `u128` into a `(high, low)` 256-bit pair, `Decimal<K>` into
   `u128`, `NonNegF64` into itself) and the distance `abs_diff`, exact for every integer
