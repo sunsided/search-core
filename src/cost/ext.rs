@@ -42,12 +42,15 @@ pub trait CostExt: Cost {
     #[must_use]
     fn saturating_sub(self, other: Self) -> Self;
 
-    /// The cost as a float, possibly rounded.
+    /// The cost as a float, possibly rounded; for [`Decimal<K>`] the raw units, scaled by
+    /// `10^K`.
     ///
     /// Only for priorities that divide costs, such as a `(G - g) / h` order. Rounding can
     /// change the expansion order among nearly equal priorities, but never a returned cost.
     /// Within one cost type the result is proportional to the cost, so quotients and the
-    /// order of differences are what the exact values give, up to rounding.
+    /// order of differences are what the exact values give, up to rounding. Do not compare
+    /// the result against a threshold in cost units: for [`Decimal<K>`] it is off by `10^K`.
+    #[must_use]
     fn to_f64(self) -> f64;
 }
 
