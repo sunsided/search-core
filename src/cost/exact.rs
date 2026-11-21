@@ -3,7 +3,7 @@
 
 use alloc::vec::Vec;
 use core::cmp::Ordering;
-use core::ops::{Add, Mul};
+use core::ops::{Add, AddAssign, Mul, MulAssign};
 
 #[cfg(feature = "float")]
 use super::NonNegF64;
@@ -64,6 +64,9 @@ pub trait ExactArith: Cost {
 
 /// An arbitrary-precision unsigned integer: 32-bit limbs, least
 /// significant first, without most significant zero limbs.
+///
+/// `+` and `*` also take references (`&a + &b`), and `+=` and `*=` take
+/// `&BigUint`; `a += &b` reuses `a`'s limbs.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct BigUint(Vec<u32>);
 
@@ -85,11 +88,28 @@ impl BigUint {
 
     /// `self - other` for `self >= other`.
     fn minus(&self, other: &Self) -> Self {
-        let mut out = self.0.clone();
+        let mut out = self.clone();
+        out.subtract(other, false);
+        out
+    }
+
+    /// In place, `self - other` (`reversed == false`, needs `self >= other`)
+    /// or `other - self` (`reversed == true`, needs `other >= self`).
+    fn subtract(&mut self, other: &Self, reversed: bool) {
+        if self.0.len() < other.0.len() {
+            self.0.resize(other.0.len(), 0);
+        }
+
         let mut borrow = 0_i64;
-        for (i, slot) in out.iter_mut().enumerate() {
-            let sub = i64::from(other.0.get(i).copied().unwrap_or(0)) + borrow;
-            let mut v = i64::from(*slot) - sub;
+        for (i, slot) in self.0.iter_mut().enumerate() {
+            let theirs = i64::from(other.0.get(i).copied().unwrap_or(0));
+            let ours = i64::from(*slot);
+            let (minuend, subtrahend) = if reversed {
+                (theirs, ours)
+            } else {
+                (ours, theirs)
+            };
+            let mut v = minuend - subtrahend - borrow;
             borrow = 0;
             if v < 0 {
                 v += 1 << 32;
@@ -97,6 +117,31 @@ impl BigUint {
             }
 
             *slot = u32::try_from(v).expect("a limb after borrowing");
+        }
+
+        debug_assert_eq!(borrow, 0, "the subtrahend exceeds the minuend");
+        self.trim();
+    }
+
+    /// Drops the most significant zero limbs, in place.
+    fn trim(&mut self) {
+        while self.0.last() == Some(&0) {
+            self.0.pop();
+        }
+    }
+
+    /// The product of two limb slices.
+    fn product(a: &[u32], b: &[u32]) -> Self {
+        let mut out = alloc::vec![0_u32; a.len() + b.len()];
+        for (i, &x) in a.iter().enumerate() {
+            let mut carry = 0_u64;
+            for (j, &y) in b.iter().enumerate() {
+                let t = u64::from(x) * u64::from(y) + u64::from(out[i + j]) + carry;
+                out[i + j] = u32::try_from(t & u64::from(u32::MAX)).expect("masked");
+                carry = t >> 32;
+            }
+
+            out[i + b.len()] = u32::try_from(carry).expect("below 2^32");
         }
 
         Self(out).trimmed()
@@ -115,23 +160,76 @@ impl From<u128> for BigUint {
     }
 }
 
+impl AddAssign<&BigUint> for BigUint {
+    /// Adds in place, reusing this value's limbs.
+    fn add_assign(&mut self, other: &BigUint) {
+        if self.0.len() < other.0.len() {
+            self.0.resize(other.0.len(), 0);
+        }
+
+        let mut carry = 0_u64;
+        for (i, slot) in self.0.iter_mut().enumerate() {
+            let s = u64::from(*slot) + u64::from(other.0.get(i).copied().unwrap_or(0)) + carry;
+            *slot = u32::try_from(s & u64::from(u32::MAX)).expect("masked");
+            carry = s >> 32;
+            if carry == 0 && i + 1 >= other.0.len() {
+                return;
+            }
+        }
+
+        if carry > 0 {
+            self.0.push(u32::try_from(carry).expect("a carry bit"));
+        }
+    }
+}
+
+impl AddAssign for BigUint {
+    fn add_assign(&mut self, other: Self) {
+        *self += &other;
+    }
+}
+
 impl Add for BigUint {
     type Output = Self;
 
-    fn add(self, other: Self) -> Self {
-        let n = self.0.len().max(other.0.len());
-        let mut out = Vec::with_capacity(n + 1);
-        let mut carry = 0_u64;
-        for i in 0..n {
-            let s = u64::from(self.0.get(i).copied().unwrap_or(0))
-                + u64::from(other.0.get(i).copied().unwrap_or(0))
-                + carry;
-            out.push(u32::try_from(s & u64::from(u32::MAX)).expect("masked"));
-            carry = s >> 32;
-        }
+    fn add(mut self, other: Self) -> Self {
+        self += &other;
+        self
+    }
+}
 
-        out.push(u32::try_from(carry).expect("a carry bit"));
-        Self(out).trimmed()
+impl Add<&BigUint> for BigUint {
+    type Output = Self;
+
+    fn add(mut self, other: &BigUint) -> Self {
+        self += other;
+        self
+    }
+}
+
+impl Add for &BigUint {
+    type Output = BigUint;
+
+    fn add(self, other: Self) -> BigUint {
+        // Copy the longer operand, so the sum rarely grows the buffer.
+        let (long, short) = if self.0.len() >= other.0.len() {
+            (self, other)
+        } else {
+            (other, self)
+        };
+        long.clone() + short
+    }
+}
+
+impl MulAssign<&BigUint> for BigUint {
+    fn mul_assign(&mut self, other: &BigUint) {
+        *self = BigUint::product(&self.0, &other.0);
+    }
+}
+
+impl MulAssign for BigUint {
+    fn mul_assign(&mut self, other: Self) {
+        *self *= &other;
     }
 }
 
@@ -139,19 +237,23 @@ impl Mul for BigUint {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
-        let mut out = alloc::vec![0_u32; self.0.len() + other.0.len()];
-        for (i, &a) in self.0.iter().enumerate() {
-            let mut carry = 0_u64;
-            for (j, &b) in other.0.iter().enumerate() {
-                let t = u64::from(a) * u64::from(b) + u64::from(out[i + j]) + carry;
-                out[i + j] = u32::try_from(t & u64::from(u32::MAX)).expect("masked");
-                carry = t >> 32;
-            }
+        Self::product(&self.0, &other.0)
+    }
+}
 
-            out[i + other.0.len()] = u32::try_from(carry).expect("below 2^32");
-        }
+impl Mul<&BigUint> for BigUint {
+    type Output = Self;
 
-        Self(out).trimmed()
+    fn mul(self, other: &BigUint) -> Self {
+        Self::product(&self.0, &other.0)
+    }
+}
+
+impl Mul for &BigUint {
+    type Output = BigUint;
+
+    fn mul(self, other: Self) -> BigUint {
+        BigUint::product(&self.0, &other.0)
     }
 }
 
@@ -285,6 +387,41 @@ mod tests {
             prop_assert_eq!(x.cmp(&y), a.cmp(&b));
             // Beyond 128 bits: (a · b) · c compared with a · (b · c).
             prop_assert_eq!((x.clone() * y.clone()) * z.clone(), x * (y * z));
+        }
+
+        /// The by-reference and in-place operations equal the owned ones,
+        /// on values of up to eight limbs.
+        #[test]
+        fn by_reference_matches_owned(
+            a in proptest::collection::vec(any::<u32>(), 0..8),
+            b in proptest::collection::vec(any::<u32>(), 0..8),
+        ) {
+            let (x, y) = (BigUint(a).trimmed(), BigUint(b).trimmed());
+            let sum = x.clone() + y.clone();
+            let product = x.clone() * y.clone();
+
+            prop_assert_eq!(&x + &y, sum.clone());
+            prop_assert_eq!(x.clone() + &y, sum.clone());
+            prop_assert_eq!(&x * &y, product.clone());
+            prop_assert_eq!(x.clone() * &y, product.clone());
+
+            let mut z = x.clone();
+            z += &y;
+            prop_assert_eq!(&z, &sum);
+            z = x.clone();
+            z += y.clone();
+            prop_assert_eq!(&z, &sum);
+            z = x.clone();
+            z *= &y;
+            prop_assert_eq!(&z, &product);
+            z = x.clone();
+            z *= y.clone();
+            prop_assert_eq!(&z, &product);
+
+            // Sums carry into a new limb and stay trimmed; distances undo sums.
+            prop_assert_ne!(sum.limbs().last(), Some(&0));
+            prop_assert_eq!(sum.abs_diff(&y), x.clone());
+            prop_assert_eq!(y.abs_diff(&sum), x);
         }
     }
 }
