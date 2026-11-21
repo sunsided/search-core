@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/sunsided/search-core/compare/v0.1.0...v0.2.0) - 2026-11-21
+
+### Added
+
+- Add BigInt, an exact signed integer for cost expressions
+- Add Lexicographic, a pair cost with a tie-breaker
+
+### Changed
+
+- Rewrite the README for the 0.1 release
+
 ## [0.1.0](https://github.com/sunsided/search-core/compare/v0.0.0...v0.1.0) - 2026-11-21
 
 ### Added
