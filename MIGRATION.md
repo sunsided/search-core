@@ -47,13 +47,13 @@ against the re-exported trait. The crate keeps its `alloc` use, so it depends on
 | `Goal<S>` | `Goal<S>` | none, 1:1 |
 | `Heuristic<S, C>` | `Heuristic<S, C = u32>` | none; algorithms already pin `C = f64` |
 | `heuristic_fn`, `HeuristicFn` | same | none, 1:1 |
-| `Zero` (`Heuristic<S, f64>`) | stays local | `f64` is not a `Cost`; the shared `Zero` does not cover it |
+| `Zero` (`Heuristic<S, f64>`) | `Zero` | delete the local one; the shared `Zero` implements `Heuristic<S, f64>` |
 | `Budget` | `Budget<Stats>` | **break** in bounds, as in heuristic-search |
 | `Limits` (finite `DEFAULT`), `Stats` | stay local | `impl search_core::Budget<Stats> for Limits` |
 | `Mdp` | stays local | MDP shape differs from graph successors |
 
-A downstream user who imports both `stochastic_search::Zero` and `search_core::Zero` gets a
-name clash; rename the local one (for example `ZeroF64`) or keep it unexported at the root.
+With the local `Zero` gone, `pub use search_core::Zero;` keeps `stochastic_search::Zero`
+working and removes the glob-import clash.
 
 ## multiobjective-search
 
@@ -75,10 +75,10 @@ name clash; rename the local one (for example `ZeroF64`) or keep it unexported a
    siblings only after `search-core` 0.1 is published, and pin `search-core = "0.1"` then.
 2. **Signed costs.** `i64` was dropped to make negative costs unrepresentable. Restore
    signed impls (with a documented non-negativity precondition) if a user needs them.
-3. **`Zero` for `f64` and arrays.** The shared `Zero` covers only `C: Cost`. Impls for `f64`
-   or `[C; N]` would compile today, but only by negative reasoning on `Cost`, which would
-   make a later `impl Cost for f64` (or arrays) a breaking change. Default: keep local zero
-   heuristics in stochastic-search and multiobjective-search.
+3. **`Zero` for `f64` and arrays.** `Zero` implements `Heuristic<S, f64>`. That impl
+   relies on `f64` never being a `Cost`, which holds by design: raw `f64` is not `Ord`, and
+   `NonNegF64` is the float cost. `[C; N]` stays local in multiobjective-search, because cost
+   vectors may still become a `Cost`-like trait.
 4. **Decimal storage.** `Decimal<K>` stores a `u64`. A `u32`-backed variant would halve
    open-list memory for small costs; add it (for example `Decimal<K, T = u64>`) only if a
    benchmark asks for it.
