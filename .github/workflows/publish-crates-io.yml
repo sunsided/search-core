@@ -1,7 +1,7 @@
 # Publishes search-core when release-plz pushes its vX.Y.Z tag.
 # Runs in the `crates-io` environment, which only allows v*.*.* tags.
 # crates.io trusted publishing is bound to this file name and environment: do not rename either.
-# Action refs are tags here; pin with scripts/pin-actions.py.
+# Actions are pinned to commit SHAs (tag in the comment); Dependabot updates them.
 name: Publish
 
 on:

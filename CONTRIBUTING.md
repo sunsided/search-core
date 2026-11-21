@@ -29,7 +29,7 @@ needs before it can be merged.
 | `task lint` | clippy (pedantic), separator ban, README link check, typos, workflow lints |
 | `task fmt` | Format the code |
 | `task doc` | Build the docs, private items included, with warnings as errors |
-| `task ci` | Everything CI runs. Run it before you open a PR |
+| `task ci` | Everything CI runs except the coverage upload and the semver check (`task coverage`, `task semver`). Run it before you open a PR |
 | `task bench` | Benchmarks |
 | `task test:prop` | Property tests with 10000 cases (`PROPTEST_CASES`) |
 | `task fuzz:smoke` | Run every fuzz target briefly (needs nightly) |
@@ -66,7 +66,7 @@ works on them.
   "Fix overflow in tile index". Do not write "Added ...", "Adds ..." or `feat: ...`.
 - Keep the subject to 72 characters or fewer, capitalized, with no trailing period. Then add
   a blank line and a body that explains *why*. The `commit-msg` hook checks the subject.
-- No co-author trailers, session links or AI attribution in commit messages. The
+- No co-author trailers, claude.ai/claude.com links or AI attribution in commit messages. The
   `commit-msg` and `pre-push` hooks reject them (`scripts/check-no-ai-attribution.sh`).
 - The changelog groups commits by their leading verb (Add, Fix, Remove, Deprecate, ...).
   Write a `BREAKING CHANGE:` line in the body for incompatible changes.

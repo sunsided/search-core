@@ -49,7 +49,7 @@ def doc_lines(path):
 
 
 def diagrams(path):
-    """Yield (start line, source) for each mermaid block in a file."""
+    """Yield (start line, source) for each mermaid block in a file; source is None if unclosed."""
     start, body = None, []
 
     for number, text in doc_lines(path):
@@ -65,6 +65,10 @@ def diagrams(path):
             continue
 
         body.append(text)
+
+    if start is not None:
+        # A fence that never closes is broken Markdown; report it instead of skipping it.
+        yield start, None
 
 
 def puppeteer_args(workdir):
@@ -96,6 +100,13 @@ def main():
     if not found:
         print("no mermaid diagrams found")
         return
+
+    unterminated = [(path, line) for path, line, src in found if src is None]
+    for path, line in unterminated:
+        print(f"{path}:{line}: mermaid block is never closed")
+
+    if unterminated:
+        sys.exit(1)
 
     mmdc = shlex.split(os.environ.get("MMDC", "mmdc"))
 

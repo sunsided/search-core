@@ -1,5 +1,5 @@
 # Keep in sync with `task ci` in the Taskfile. Job `name:`s are the required status checks.
-# Action refs are tags here; run scripts/pin-actions.py to pin them to commit SHAs.
+# Actions are pinned to commit SHAs (tag in the comment); Dependabot updates them.
 name: CI
 
 on:

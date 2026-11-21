@@ -1,11 +1,12 @@
 //! Scalar path costs: the [`Cost`] trait, its integer implementations, the fixed-point
 //! [`Decimal`] and, behind the `float` feature, the checked float `NonNegF64`; and the exact
-//! cost-by-cost product [`WideMul`]; and, with `alloc`, exact arithmetic of any size
-//! through [`ExactArith`].
+//! cost-by-cost product [`WideMul`]; the priority arithmetic [`CostExt`]; and, with `alloc`,
+//! exact arithmetic of any size through [`ExactArith`].
 
 mod decimal;
 #[cfg(feature = "alloc")]
 mod exact;
+mod ext;
 #[cfg(feature = "float")]
 mod float;
 mod wide;
@@ -15,6 +16,7 @@ use core::ops::Add;
 pub use decimal::{Decimal, ParseDecimalError};
 #[cfg(feature = "alloc")]
 pub use exact::{BigUint, ExactArith, ExactNumber};
+pub use ext::CostExt;
 #[cfg(feature = "float")]
 pub use float::NonNegF64;
 pub use wide::WideMul;
