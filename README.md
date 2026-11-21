@@ -52,6 +52,7 @@ search-core = "0.1"
 | `CostExt` | `saturating_sub` and a possibly rounding `to_f64`, for priorities that subtract or divide costs, as in anytime and bidirectional searches. |
 | `WideMul` | Exact product of two costs in a wider type, and the distance `abs_diff`, for comparing cost ratios by cross-multiplication. |
 | `ExactArith` | Feature `alloc`: converts a cost into an exact number type (`BigUint` for integers and `Decimal`) for sums of products and longer products. |
+| `BigInt` | Feature `alloc`: an exact signed integer for differences of such expressions, which may be negative, such as Dinkelbach weights `den · c₁ - num · c₂`. |
 
 `CostExt`, `WideMul` and `ExactArith` are separate from `Cost`, so a custom cost type only
 implements the capabilities the algorithms it is used with ask for. Implement `Cost` for
@@ -103,7 +104,7 @@ assert!("3.125".parse::<Decimal<2>>().is_err());
 
 | Feature | Default | Enables |
 |---|---|---|
-| `alloc` | yes | `Heuristic` for `Box<H>`; `ExactArith`, `ExactNumber` and `BigUint` |
+| `alloc` | yes | `Heuristic` for `Box<H>`; `ExactArith`, `ExactNumber`, `BigUint` and `BigInt` |
 | `float` | no | The checked float cost `NonNegF64` |
 
 With `default-features = false`, the crate needs neither `std` nor `alloc`.

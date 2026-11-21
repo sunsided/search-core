@@ -9,12 +9,16 @@ use core::ops::{Add, Mul};
 use super::NonNegF64;
 use super::{Cost, Decimal};
 
+mod signed;
+
+pub use signed::BigInt;
+
 /// A number type closed under exact `+` and `*`, with a zero, a one and a
 /// distance, for comparisons that [`WideMul`](crate::WideMul) cannot
 /// express: sums of products, products of three or more costs.
 ///
-/// Implemented by [`BigUint`] (exact) and, behind `float`, by `NonNegF64`
-/// (rounded like `f64`).
+/// Implemented by [`BigUint`] and [`BigInt`] (exact) and, behind `float`, by
+/// `NonNegF64` (rounded like `f64`).
 pub trait ExactNumber: Clone + Ord + Add<Output = Self> + Mul<Output = Self> {
     /// Zero.
     fn zero() -> Self;

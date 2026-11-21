@@ -16,7 +16,7 @@ use core::ops::Add;
 
 pub use decimal::{Decimal, ParseDecimalError};
 #[cfg(feature = "alloc")]
-pub use exact::{BigUint, ExactArith, ExactNumber};
+pub use exact::{BigInt, BigUint, ExactArith, ExactNumber};
 pub use ext::CostExt;
 #[cfg(feature = "float")]
 pub use float::NonNegF64;
