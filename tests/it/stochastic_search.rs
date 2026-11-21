@@ -1,5 +1,5 @@
-//! Plays `stochastic-search`: `f64` expected-cost heuristics (not a [`Cost`]), a local zero
-//! heuristic for `f64`, and a budget over MDP counters.
+//! Plays `stochastic-search`: `f64` expected-cost heuristics (not a [`Cost`]), the shared
+//! blind [`Zero`] for `f64`, and a budget over MDP counters.
 
 use search_core::{Budget, Goal, Heuristic, Zero, heuristic_fn};
 
