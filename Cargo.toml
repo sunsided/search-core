@@ -10,6 +10,19 @@ repository = "https://github.com/sunsided/search-core"
 readme = "README.md"
 keywords = ["search", "planning", "traits", "pathfinding"]
 categories = ["algorithms", "no-std"]
+# Repository tooling stays out of the published crate.
+exclude = [
+    ".github/",
+    "scripts/",
+    ".pre-commit-config.yaml",
+    "Taskfile.dist.yaml",
+    "_typos.toml",
+    "clippy.toml",
+    "codecov.yml",
+    "deny.toml",
+    "release-plz.toml",
+    "rustfmt.toml",
+]
 
 [features]
 default = ["alloc"]
