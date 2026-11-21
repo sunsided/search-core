@@ -2,6 +2,8 @@
 # Local hooks call Taskfile tasks so checks stay defined in one place.
 # Pin external repos to SHAs: `prek auto-update --freeze` / `pre-commit autoupdate --freeze`.
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
+# Hooks without `stages:` run on commit only, not again on commit-msg and push.
+default_stages: [pre-commit]
 # License texts are verbatim SPDX downloads; whitespace fixers must not touch them.
 exclude: ^(LICENSES/|LICENSE-)
 
@@ -57,6 +59,20 @@ repos:
         entry: python3 scripts/check-commit-msg.py
         language: system
         stages: [commit-msg]
+
+      - id: no-ai-attribution
+        name: no AI attribution in the commit message
+        entry: sh scripts/check-no-ai-attribution.sh msg
+        language: system
+        stages: [commit-msg]
+
+      - id: no-ai-attribution-push
+        name: no AI attribution in pushed commits
+        entry: sh scripts/check-no-ai-attribution.sh push
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
 
       - id: branch
         name: branch follows the branching model

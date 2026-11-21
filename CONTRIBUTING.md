@@ -66,6 +66,8 @@ works on them.
   "Fix overflow in tile index". Do not write "Added ...", "Adds ..." or `feat: ...`.
 - Keep the subject to 72 characters or fewer, capitalized, with no trailing period. Then add
   a blank line and a body that explains *why*. The `commit-msg` hook checks the subject.
+- No co-author trailers, session links or AI attribution in commit messages. The
+  `commit-msg` and `pre-push` hooks reject them (`scripts/check-no-ai-attribution.sh`).
 - The changelog groups commits by their leading verb (Add, Fix, Remove, Deprecate, ...).
   Write a `BREAKING CHANGE:` line in the body for incompatible changes.
 - PRs are merged with a merge commit, or squashed using the PR title and description. Write
