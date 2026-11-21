@@ -93,3 +93,8 @@ pub use cost::{BigUint, ExactArith, ExactNumber};
 pub use cost::{Cost, Decimal, WideMul};
 pub use goal::Goal;
 pub use heuristic::{Heuristic, HeuristicFn, Zero, heuristic_fn};
+
+/// Doctests for the code examples in README.md (not part of the API).
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+mod readme_doctests {}
