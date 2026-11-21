@@ -47,6 +47,7 @@ search-core = "0.1"
 |---|---|
 | `Cost` | Non-negative, totally ordered scalar path cost with `ZERO`, `saturating_add` and `saturating_times`. Implemented for `u8` to `u128` and `usize`; `u32` is the default cost type of `Heuristic`. |
 | `Decimal<K>` | Exact fixed-point cost with `K` decimal places (`K <= 19`, checked at compile time), stored as `u64`. `FromStr` parses text such as `"3.25"` exactly and rejects anything that would need rounding (`ParseDecimalError`). |
+| `Lexicographic<P, S>` | A pair cost: `primary` first, `secondary` only to break ties, for example the fewest steps and then the fewest conflicts. Any search over `C: Cost` accepts it. |
 | `NonNegF64` | Feature `float`: an `f64` cost that rejects NaN and negative values, so it can be `Ord`. Rounds like `f64`; prefer integers or `Decimal` for exact results. |
 | `CostExt` | `saturating_sub` and a possibly rounding `to_f64`, for priorities that subtract or divide costs, as in anytime and bidirectional searches. |
 | `WideMul` | Exact product of two costs in a wider type, and the distance `abs_diff`, for comparing cost ratios by cross-multiplication. |

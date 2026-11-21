@@ -7,7 +7,8 @@
 //!
 //! - [`Cost`]: a non-negative, totally ordered scalar path cost. Implemented for the unsigned
 //!   integers (the ecosystem default is `u32`), the fixed-point [`Decimal`] with scale `10^K`,
-//!   and, behind the `float` feature, the checked float `NonNegF64`.
+//!   the tie-breaking pair [`Lexicographic`], and, behind the `float` feature, the checked
+//!   float `NonNegF64`.
 //! - [`CostExt`]: saturating subtraction and a (possibly rounding) conversion to `f64`, for
 //!   priorities that subtract or divide costs; also separate from [`Cost`].
 //! - [`WideMul`]: the exact product of two costs in a wider type, for comparing cost ratios
@@ -92,7 +93,7 @@ pub use budget::Budget;
 pub use cost::NonNegF64;
 #[cfg(feature = "alloc")]
 pub use cost::{BigUint, ExactArith, ExactNumber};
-pub use cost::{Cost, CostExt, Decimal, ParseDecimalError, WideMul};
+pub use cost::{Cost, CostExt, Decimal, Lexicographic, ParseDecimalError, WideMul};
 pub use goal::Goal;
 pub use heuristic::{Heuristic, HeuristicFn, Zero, heuristic_fn};
 
