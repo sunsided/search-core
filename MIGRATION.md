@@ -67,6 +67,7 @@ working and removes the glob-import clash.
 | `Dominates`, `weakly_dominates`, `add` | stay local | only one crate uses Pareto dominance |
 | `Graph` | stays local | appends to a `Vec` and has no action labels, unlike `Successors` |
 | goal predicate `P: Fn(&S) -> bool` | `Goal<S>` (optional) | non-breaking: every such closure already implements `Goal` |
+| `fractional::Signed` (wrapping 256-bit), `fractional::big` | `BigInt`, `BigUint` (feature `alloc`) | internal: Dinkelbach weights become `BigInt::from(den.exact() * c1.exact()) - BigInt::from(num.exact() * c2.exact())`; exact without a width bound, at the cost of an allocation per weight |
 
 ## Open questions
 
