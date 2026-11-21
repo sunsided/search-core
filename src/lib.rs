@@ -90,7 +90,7 @@ pub use budget::Budget;
 pub use cost::NonNegF64;
 #[cfg(feature = "alloc")]
 pub use cost::{BigUint, ExactArith, ExactNumber};
-pub use cost::{Cost, Decimal, WideMul};
+pub use cost::{Cost, Decimal, ParseDecimalError, WideMul};
 pub use goal::Goal;
 pub use heuristic::{Heuristic, HeuristicFn, Zero, heuristic_fn};
 

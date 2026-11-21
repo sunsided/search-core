@@ -5,6 +5,10 @@ use core::ops::Add;
 
 use super::Cost;
 
+mod parse;
+
+pub use parse::ParseDecimalError;
+
 /// A non-negative fixed-point decimal cost with `K` decimal places.
 ///
 /// Stores an integer number of units of `10^-K` in a `u64`, so `Decimal::<2>` counts
@@ -26,7 +30,8 @@ use super::Cost;
 /// operation that needs the scale performs it.
 ///
 /// [`Display`](fmt::Display) and [`Debug`](fmt::Debug) both print the decimal value with
-/// exactly `K` fraction digits.
+/// exactly `K` fraction digits; [`FromStr`](core::str::FromStr) parses it back exactly,
+/// rejecting text that would round (see [`ParseDecimalError`]).
 ///
 /// # Examples
 ///
