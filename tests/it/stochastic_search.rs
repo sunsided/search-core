@@ -1,7 +1,7 @@
-//! Plays `stochastic-search`: `f64` expected-cost heuristics (not a [`Cost`]), a local zero
-//! heuristic for `f64`, and a budget over MDP counters.
+//! Plays `stochastic-search`: `f64` expected-cost heuristics (not a [`Cost`]), the shared
+//! blind [`Zero`] for `f64`, and a budget over MDP counters.
 
-use search_core::{Budget, Goal, Heuristic, heuristic_fn};
+use search_core::{Budget, Goal, Heuristic, Zero, heuristic_fn};
 
 /// The counters of an MDP solver run.
 #[derive(Default)]
@@ -24,15 +24,6 @@ impl Budget<Stats> for Limits {
     fn exhausted(&mut self, stats: &Stats) -> bool {
         self.max_backups.is_some_and(|max| stats.backups >= max)
             || self.max_states.is_some_and(|max| stats.states >= max)
-    }
-}
-
-/// The local blind heuristic for `f64`, which the shared `Zero` does not cover.
-struct Zero;
-
-impl<S> Heuristic<S, f64> for Zero {
-    fn estimate(&mut self, _state: &S) -> Option<f64> {
-        Some(0.0)
     }
 }
 

@@ -38,7 +38,7 @@ Implemented:
   `*` and a distance, for sums of products and longer products. Also separate from `Cost`.
   `NonNegF64` gains `Mul` (with `0 · ∞ = 0`).
 - `Heuristic<S, C = u32>` with `&mut self` workspaces, forwarding impls for `&mut H` and
-  `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero`.
+  `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero` (for every `Cost` and for `f64`).
 - `Goal<S>`, implemented for `Fn(&S) -> bool`.
 - `Budget<Stats>` over a crate's own statistics type, implemented for `FnMut(&Stats) -> bool`.
 
