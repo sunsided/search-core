@@ -1,6 +1,7 @@
 //! # Search core
 //!
-//! Small shared traits for planning and search crates.
+//! Shared cost, heuristic, goal and budget traits for search and planning crates, with exact
+//! `no_std` cost types.
 //!
 //! The crate holds only what at least two independent search crates need, so that a
 //! heuristic, goal test or budget written once works with every algorithm of the ecosystem:
@@ -35,7 +36,8 @@
 //!
 //! ## Features
 //!
-//! - `alloc` (default): `Heuristic` for `Box<H>`.
+//! - `alloc` (default): `Heuristic` for `Box<H>`; [`ExactArith`] with [`BigUint`] and
+//!   [`BigInt`].
 //! - `float`: the `NonNegF64` cost.
 //!
 //! The crate is `no_std` in every configuration.
@@ -70,11 +72,6 @@
 //! assert_eq!(descend(5, &|s: &u32| *s == 2, h, |n: &u64| *n >= 10), Some(2));
 //! assert_eq!(descend(5, &|s: &u32| *s == 2, h, |n: &u64| *n >= 1), None);
 //! ```
-//!
-//! ## Status
-//!
-//! Pre-release; the API may still change before 0.1. See `MIGRATION.md` for how the sibling
-//! crates would adopt it.
 //!
 //! Repository: <https://github.com/sunsided/search-core>
 

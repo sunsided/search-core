@@ -14,8 +14,28 @@ search budgets.
 Search algorithm crates use these traits as bounds, and users implement them once for their
 problem: a heuristic, goal test or budget written against `search-core` works with every
 algorithm that accepts it, whichever crate provides the algorithm. The crate is `no_std`,
-has no dependencies, and keeps to small, stable abstractions that are useful across many
-search algorithms.
+has no dependencies, and keeps to small abstractions that are useful across many search
+algorithms. Besides the plain unsigned integers, it ships the exact cost types `Decimal<K>` (fixed
+point) and `Lexicographic<P, S>` (a tie-breaking pair) and a checked `f64` cost, plus the
+arbitrary-precision `BigUint` and `BigInt` for exact arithmetic over costs, so that an
+algorithm generic over `C: Cost` never rounds unless the caller picks a float cost.
+
+## Who this is for
+
+- Authors of search and planning crates who want their algorithms to accept the same
+  heuristics, goal tests and budgets as the other crates of the ecosystem, instead of
+  defining yet another `Heuristic` trait.
+- Users of those crates who write a domain heuristic (a grid distance, a pattern database,
+  a relaxed-plan estimate) or a goal test once and pass it to every algorithm that takes
+  the shared trait for that cost type, such as the A\* family of heuristic-search or the
+  MDP planners of stochastic-search (which use `f64` costs).
+- Anyone who needs exact path costs, e.g. prices or durations with a fixed number of decimal
+  places, or lexicographic costs such as "fewest steps, then fewest conflicts".
+- If you are looking for an actual search algorithm rather than the traits, pick
+  [heuristic-search](https://github.com/sunsided/heuristic-search) for A* and its relatives,
+  [multiobjective-search](https://github.com/sunsided/multiobjective-search) for Pareto
+  fronts, [mapf-search](https://github.com/sunsided/mapf-search) for multi-agent pathfinding
+  or [stochastic-search](https://github.com/sunsided/stochastic-search) for MDPs and POMDPs.
 
 ## Installation
 
@@ -27,7 +47,7 @@ Or in `Cargo.toml`:
 
 ```toml
 [dependencies]
-search-core = "0.1"
+search-core = "0.3"
 ```
 
 ## Overview

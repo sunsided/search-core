@@ -1,10 +1,10 @@
 # Migrating the sibling crates to search-core
 
-How each planning/search crate would adopt `search-core`. Nothing here has been applied yet;
-the siblings still define their own traits. `tests/it/` has a stand-in module for
-heuristic-search (including `NonNegF64` costs and the weighted key), stochastic-search and
-multiobjective-search, so those mappings are known to compile under the orphan rules of a
-downstream crate. planning-heuristics needs no stand-in: its trait is identical.
+How the planning/search crates map their former local traits onto `search-core`, and what
+changed for their users. `tests/it/` has a stand-in module for heuristic-search (including
+`NonNegF64` costs and the weighted key), stochastic-search and multiobjective-search, so
+those mappings are known to compile under the orphan rules of a downstream crate.
+planning-heuristics needs no stand-in: its trait is identical.
 
 The general pattern: depend on `search-core`, delete the local trait, and re-export the
 shared one from the crate root (`pub use search_core::{Goal, Heuristic, ...};`) so existing
@@ -71,24 +71,20 @@ working and removes the glob-import clash.
 
 ## Open questions
 
-1. **Depend before 0.1?** Re-exporting makes `search-core` a public dependency: a breaking
-   change here becomes a breaking change in every sibling, and two siblings on different
-   `search-core` versions have incompatible `Heuristic` traits. Default: migrate the
-   siblings only after `search-core` 0.1 is published, and pin `search-core = "0.1"` then.
-2. **Signed costs.** `i64` was dropped to make negative costs unrepresentable. Restore
+1. **Signed costs.** `i64` was dropped to make negative costs unrepresentable. Restore
    signed impls (with a documented non-negativity precondition) if a user needs them.
-3. **`Zero` for `f64` and arrays.** `Zero` implements `Heuristic<S, f64>`. That impl
+2. **`Zero` for `f64` and arrays.** `Zero` implements `Heuristic<S, f64>`. That impl
    relies on `f64` never being a `Cost`, which holds by design: raw `f64` is not `Ord`, and
    `NonNegF64` is the float cost. `[C; N]` stays local in multiobjective-search, because cost
    vectors may still become a `Cost`-like trait.
-4. **Decimal storage.** `Decimal<K>` stores a `u64`. A `u32`-backed variant would halve
+3. **Decimal storage.** `Decimal<K>` stores a `u64`. A `u32`-backed variant would halve
    open-list memory for small costs; add it (for example `Decimal<K, T = u64>`) only if a
    benchmark asks for it.
-5. **Decimal parsing.** `Decimal<K>` implements `FromStr` (exact, rejecting more than `K`
+4. **Decimal parsing.** `Decimal<K>` implements `FromStr` (exact, rejecting more than `K`
    fraction digits), so pddl-rs can parse fractional `:action-costs` into it directly.
-6. **`Successors`.** Kept out because only heuristic-search has the callback shape. If
+5. **`Successors`.** Kept out because only heuristic-search has the callback shape. If
    multiobjective-search adopts the callback form and a `Successors::Cost` bound that admits
    vectors, the trait can move here without breaking anything.
-7. **Overflow of `+`.** `Decimal` follows `u64` (panic in debug, wrap in release) for
+6. **Overflow of `+`.** `Decimal` follows `u64` (panic in debug, wrap in release) for
    consistency with the primitive costs. An always-checked `+` would trade a few cycles for
    never silently wrapping.

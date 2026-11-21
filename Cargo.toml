@@ -1,6 +1,6 @@
 [package]
 name = "search-core"
-description = "Small shared traits for planning and search crates"
+description = "Shared cost, heuristic, goal and budget traits for search and planning crates, with exact no_std cost types"
 version = "0.3.0"
 edition = "2024"
 rust-version = "1.85"
@@ -8,8 +8,8 @@ authors = ["Markus Mayer <widemeadows@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sunsided/search-core"
 readme = "README.md"
-keywords = ["search", "planning", "traits", "pathfinding"]
-categories = ["algorithms", "no-std"]
+keywords = ["search", "planning", "heuristic", "pathfinding", "astar"]
+categories = ["algorithms", "no-std", "no-std::no-alloc"]
 # Repository tooling stays out of the published crate.
 exclude = [
     ".github/",
