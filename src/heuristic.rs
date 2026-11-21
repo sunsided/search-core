@@ -104,8 +104,9 @@ impl<S, C, F: FnMut(&S) -> Option<C>> Heuristic<S, C> for HeuristicFn<F> {
 /// The blind heuristic: estimates [`Cost::ZERO`] everywhere. Turns A* into Dijkstra's
 /// algorithm and is admissible and consistent for every non-negative cost.
 ///
-/// Implemented for every scalar [`Cost`] only. Cost vectors and raw floats are not `Cost`;
-/// crates that use them keep their own zero heuristic (see `MIGRATION.md`).
+/// Implemented for every scalar [`Cost`] and for raw `f64` values, which are not a `Cost`
+/// (they are not `Ord`) but are what value-iteration style searches estimate in. Cost
+/// vectors keep their own zero heuristic (see `MIGRATION.md`).
 ///
 /// # Examples
 ///
@@ -114,6 +115,7 @@ impl<S, C, F: FnMut(&S) -> Option<C>> Heuristic<S, C> for HeuristicFn<F> {
 ///
 /// assert_eq!(Heuristic::<&str>::estimate(&mut Zero, &"any"), Some(0_u32));
 /// assert_eq!(Heuristic::<u8, Decimal<2>>::estimate(&mut Zero, &1), Some(Decimal::from_raw(0)));
+/// assert_eq!(Heuristic::<u8, f64>::estimate(&mut Zero, &1), Some(0.0));
 /// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub struct Zero;
@@ -121,5 +123,12 @@ pub struct Zero;
 impl<S, C: Cost> Heuristic<S, C> for Zero {
     fn estimate(&mut self, _state: &S) -> Option<C> {
         Some(C::ZERO)
+    }
+}
+
+/// Raw `f64` estimates: `f64` is not a [`Cost`], so this does not overlap the impl above.
+impl<S> Heuristic<S, f64> for Zero {
+    fn estimate(&mut self, _state: &S) -> Option<f64> {
+        Some(0.0)
     }
 }

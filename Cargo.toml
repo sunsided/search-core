@@ -10,10 +10,23 @@ repository = "https://github.com/sunsided/search-core"
 readme = "README.md"
 keywords = ["search", "planning", "traits", "pathfinding"]
 categories = ["algorithms", "no-std"]
+# Repository tooling stays out of the published crate.
+exclude = [
+    ".github/",
+    "scripts/",
+    ".pre-commit-config.yaml",
+    "Taskfile.dist.yaml",
+    "_typos.toml",
+    "clippy.toml",
+    "codecov.yml",
+    "deny.toml",
+    "release-plz.toml",
+    "rustfmt.toml",
+]
 
 [features]
 default = ["alloc"]
-## `Heuristic` for `Box<H>`.
+## `Heuristic` for `Box<H>`, and `ExactArith` with `BigUint`.
 alloc = []
 ## The checked float cost `NonNegF64`.
 float = []
@@ -21,10 +34,18 @@ float = []
 [dependencies]
 
 [dev-dependencies]
+# cargo_bench_support alone keeps plotters and rayon out.
+criterion = { version = "0.8", default-features = false, features = ["cargo_bench_support"] }
 proptest = "1.12"
+
+[[bench]]
+name = "cost"
+harness = false
+required-features = ["alloc"]
 
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = ["--html-in-header", "docs/mermaid.html"]
 
 [lints.rust]
 missing_docs = "warn"
@@ -32,4 +53,14 @@ unsafe_code = "forbid"
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
+mod_module_files = "deny"
 missing_docs_in_private_items = "warn"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+undocumented_unsafe_blocks = "warn"
+multiple_unsafe_ops_per_block = "warn"
+cognitive_complexity = "warn"
+
+[lints.rustdoc]
+broken_intra_doc_links = "deny"
+private_intra_doc_links = "allow"

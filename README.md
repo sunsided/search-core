@@ -1,5 +1,13 @@
 # search-core
 
+[![crates.io](https://img.shields.io/crates/v/search-core.svg)](https://crates.io/crates/search-core)
+[![docs.rs](https://img.shields.io/docsrs/search-core)](https://docs.rs/search-core)
+[![CI](https://github.com/sunsided/search-core/actions/workflows/ci.yml/badge.svg)](https://github.com/sunsided/search-core/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sunsided/search-core/graph/badge.svg)](https://codecov.io/gh/sunsided/search-core)
+[![MSRV](https://img.shields.io/crates/msrv/search-core)](https://crates.io/crates/search-core)
+[![License](https://img.shields.io/crates/l/search-core)](https://github.com/sunsided/search-core#license)
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+
 Small shared traits for planning and search crates.
 
 A heuristic, goal test or budget written once against these traits works with every
@@ -17,6 +25,9 @@ Implemented:
   compile time), stored as `u64`.
 - `NonNegF64` (feature `float`): an `f64` cost that rejects NaN and negative values, so it
   can be `Ord`. Sound, but rounds; prefer integers or `Decimal` for exact results.
+- `CostExt`: `saturating_sub` and a possibly rounding `to_f64` (raw units for `Decimal`)
+  for priorities that subtract or divide costs, such as anytime and bidirectional searches.
+  A separate trait, implemented for every cost above.
 - `WideMul`: the product of two costs in a wider type (`u8`–`u64` into the next wider
   integer, `usize` into `u128`, `u128` into a `(high, low)` 256-bit pair, `Decimal<K>` into
   `u128`, `NonNegF64` into itself) and the distance `abs_diff`, exact for every integer
@@ -27,16 +38,22 @@ Implemented:
   `*` and a distance, for sums of products and longer products. Also separate from `Cost`.
   `NonNegF64` gains `Mul` (with `0 · ∞ = 0`).
 - `Heuristic<S, C = u32>` with `&mut self` workspaces, forwarding impls for `&mut H` and
-  `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero`.
+  `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero` (for every `Cost` and for `f64`).
 - `Goal<S>`, implemented for `Fn(&S) -> bool`.
 - `Budget<Stats>` over a crate's own statistics type, implemented for `FnMut(&Stats) -> bool`.
 
 Not included, on purpose: successor generation (`Successors`, `Graph`, `Mdp`), statistics
 and limits structs, and Pareto dominance. Their shapes differ between the sibling crates, or
-only one crate uses them. See [MIGRATION.md](MIGRATION.md) for how each sibling would adopt
+only one crate uses them. See [MIGRATION.md](https://github.com/sunsided/search-core/blob/main/MIGRATION.md) for how each sibling would adopt
 this crate.
 
 Pre-release: version 0.0.0 reserves the name, and the API may still change before 0.1.
+
+## Install
+
+```sh
+cargo add search-core
+```
 
 ## Example
 
@@ -51,11 +68,31 @@ assert_eq!(cost.to_string(), "3.25");
 assert!(Decimal::<2>::ZERO < cost);
 ```
 
+## Features
+
+- `alloc` (default): `Heuristic` for `Box<H>`, and `ExactArith` with `BigUint`.
+- `float`: the checked float cost `NonNegF64`.
+
+Without default features the crate needs neither `std` nor `alloc`.
+
+## MSRV
+
+Rust 1.85 (edition 2024). The minimum supported Rust version may be raised in a minor
+release when a dependency or a language feature calls for it.
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/sunsided/search-core/blob/main/CONTRIBUTING.md).
+
 ## License
 
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT license ([LICENSE-MIT](LICENSE-MIT))
+- Apache License, Version 2.0 ([LICENSE-APACHE](https://github.com/sunsided/search-core/blob/main/LICENSE-APACHE))
+- MIT license ([LICENSE-MIT](https://github.com/sunsided/search-core/blob/main/LICENSE-MIT))
 
 at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion
+in this work by you, as defined in the Apache-2.0 license, shall be dual licensed as above,
+without any additional terms or conditions.
