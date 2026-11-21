@@ -9,6 +9,7 @@ mod exact;
 mod ext;
 #[cfg(feature = "float")]
 mod float;
+mod lexicographic;
 mod wide;
 
 use core::ops::Add;
@@ -19,6 +20,7 @@ pub use exact::{BigUint, ExactArith, ExactNumber};
 pub use ext::CostExt;
 #[cfg(feature = "float")]
 pub use float::NonNegF64;
+pub use lexicographic::Lexicographic;
 pub use wide::WideMul;
 
 /// A non-negative scalar edge or path cost.
@@ -38,8 +40,8 @@ pub use wide::WideMul;
 ///   [`Cost::saturating_add`] where a sum only serves as a priority. `NonNegF64` never
 ///   overflows; it reaches infinity instead.
 ///
-/// Implemented for `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, [`Decimal`] and (feature
-/// `float`) `NonNegF64`.
+/// Implemented for `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, [`Decimal`], the pair
+/// [`Lexicographic`] and (feature `float`) `NonNegF64`.
 ///
 /// # Examples
 ///
