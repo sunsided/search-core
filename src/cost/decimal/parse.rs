@@ -15,7 +15,8 @@ pub enum ParseDecimalError {
     /// A character other than an ASCII digit and one `.` between digits, such as a
     /// sign, whitespace, an exponent or a trailing `.`.
     InvalidDigit,
-    /// More fraction digits than the `K` decimal places, so the value would round.
+    /// More fraction digits than the `K` decimal places, even if the extra digits are zeros:
+    /// the rule is the digit count, not whether the value could be represented.
     TooManyFractionDigits,
     /// The value exceeds the largest `Decimal<K>`, `u64::MAX` raw units.
     Overflow,
@@ -37,7 +38,7 @@ impl core::error::Error for ParseDecimalError {}
 /// Parses `whole` or `whole.fraction`, exactly.
 ///
 /// Both parts are plain ASCII digits; leading zeros are fine. The fraction has
-/// 1 to `K` digits, so nothing is ever rounded: `"1.25"` is a `Decimal<2>` or
+/// 1 to `K` digits, trailing zeros included, so nothing is ever rounded: `"1.25"` is a `Decimal<2>` or
 /// `Decimal<3>` but not a `Decimal<1>`, and `Decimal<0>` takes integers only.
 ///
 /// # Errors
@@ -105,18 +106,21 @@ fn digits_value(digits: &str) -> Result<u64, ParseDecimalError> {
 
 /// The fraction digits as raw `10^-K` units: `"5"` is `5 · 10^(K-1)`.
 ///
-/// Never overflows: at most `K <= 19` digits, so the result is below `10^K`.
+/// Malformed text is [`ParseDecimalError::InvalidDigit`] first. The length is checked before
+/// the digits are summed, so an overlong fraction is always
+/// [`ParseDecimalError::TooManyFractionDigits`], never `Overflow`. After that check there
+/// are at most `K <= 19` digits, so the value is below `10^K` and cannot overflow.
 fn fraction_raw<const K: u32>(fraction: &str) -> Result<u64, ParseDecimalError> {
-    if fraction.is_empty() {
+    if fraction.is_empty() || !fraction.bytes().all(|byte| byte.is_ascii_digit()) {
         return Err(ParseDecimalError::InvalidDigit);
     }
 
-    let value = digits_value(fraction)?;
     let missing = usize::try_from(K)
         .ok()
         .and_then(|k| k.checked_sub(fraction.len()))
         .ok_or(ParseDecimalError::TooManyFractionDigits)?;
     let padding = u32::try_from(missing).expect("missing <= K, which is a u32");
+    let value = digits_value(fraction)?;
 
     Ok(value * 10_u64.pow(padding))
 }
@@ -163,9 +167,14 @@ mod tests {
         }
     }
 
-    /// A fraction longer than `K` would round, so it is rejected, trailing zeros too.
+    /// More than `K` fraction digits are rejected by count, trailing zeros too, and
+    /// regardless of how large the digits are.
     #[test]
-    fn rejects_rounding() {
+    fn rejects_too_many_fraction_digits() {
+        assert_eq!(
+            raw::<2>("0.99999999999999999999"),
+            Err(ParseDecimalError::TooManyFractionDigits)
+        );
         assert_eq!(
             raw::<1>("1.25"),
             Err(ParseDecimalError::TooManyFractionDigits)

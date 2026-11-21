@@ -22,8 +22,8 @@ Implemented:
   `saturating_times`. Implemented for `u8`, `u16`, `u32` (the ecosystem default), `u64`,
   `u128` and `usize`.
 - `Decimal<K>`: exact fixed-point decimal cost with scale `10^K` (`K <= 19`, checked at
-  compile time), stored as `u64`. `FromStr` parses `"3.25"` exactly and rejects text that
-  would round (more than `K` fraction digits), signs and overflow (`ParseDecimalError`).
+  compile time), stored as `u64`. `FromStr` parses `"3.25"` exactly and rejects more than `K`
+  fraction digits (so nothing rounds), signs and overflow (`ParseDecimalError`).
 - `NonNegF64` (feature `float`): an `f64` cost that rejects NaN and negative values, so it
   can be `Ord`. Sound, but rounds; prefer integers or `Decimal` for exact results.
 - `WideMul`: the product of two costs in a wider type (`u8`–`u64` into the next wider
