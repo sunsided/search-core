@@ -1,4 +1,4 @@
-# Lints the workflows themselves. Action refs are tags here; pin with scripts/pin-actions.py.
+# Lints the workflows themselves. Actions are pinned to commit SHAs; Dependabot updates them.
 name: GitHub Actions lint
 
 # No path filters: a path-filtered workflow cannot be a required status check.
@@ -25,7 +25,7 @@ jobs:
         with:
           persist-credentials: false
       # Official image (bundles shellcheck); install-action no longer ships actionlint.
-      # Pinned by digest here because scripts/pin-actions.py leaves docker:// refs alone.
+      # Pinned by digest; Dependabot does not update docker:// refs, so bump it by hand.
       - uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
         with:
           args: -color

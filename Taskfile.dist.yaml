@@ -1,5 +1,7 @@
 # https://taskfile.dev
-# Keep `ci` in sync with .github/workflows/ci.yml: same checks, same flags.
+# Keep `ci` in sync with .github/workflows/ci.yml: same checks, same flags. Two jobs stay out:
+# coverage only matters for the upload (`task coverage`), and semver needs the crates.io
+# baseline (`task semver`).
 # Keep an existing Taskfile's file name (Taskfile.yml etc.); merge these tasks into it.
 version: '3'
 
@@ -102,10 +104,9 @@ tasks:
     cmds:
       # `if` instead of `! a | b`: Task's shell does not negate pipelines like bash does.
       - |
-        # docs/review/README.md is a GitHub-only index with generated relative links.
         if grep -rnoE --include='README.md' --exclude-dir=target --exclude-dir=.git --exclude-dir=review '(\]\(|src=")[^)"]*' . \
           | grep -vE ':(\]\(|src=")(https?://|#|mailto:)'; then
-          echo "use absolute URLs for these links (docs/readme.md)"
+          echo "use absolute URLs for these links: crates.io and docs.rs render READMEs outside GitHub"
           exit 1
         fi
 
@@ -189,7 +190,7 @@ tasks:
       - cargo bench --workspace --bench '*' -- {{.CLI_ARGS}}
 
   ci:
-    desc: Run the CI checks locally (mirrors .github/workflows/ci.yml)
+    desc: Run the CI checks locally (mirrors .github/workflows/ci.yml except coverage and semver)
     cmds:
       - task: lint:branch
       - task: fmt:check

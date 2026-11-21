@@ -29,7 +29,7 @@ needs before it can be merged.
 | `task lint` | clippy (pedantic), separator ban, README link check, typos, workflow lints |
 | `task fmt` | Format the code |
 | `task doc` | Build the docs, private items included, with warnings as errors |
-| `task ci` | Everything CI runs. Run it before you open a PR |
+| `task ci` | Everything CI runs except the coverage upload and the semver check (`task coverage`, `task semver`). Run it before you open a PR |
 | `task bench` | Benchmarks |
 | `task test:prop` | Property tests with 10000 cases (`PROPTEST_CASES`) |
 | `task fuzz:smoke` | Run every fuzz target briefly (needs nightly) |
