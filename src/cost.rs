@@ -13,7 +13,7 @@ mod wide;
 
 use core::ops::Add;
 
-pub use decimal::Decimal;
+pub use decimal::{Decimal, ParseDecimalError};
 #[cfg(feature = "alloc")]
 pub use exact::{BigUint, ExactArith, ExactNumber};
 pub use ext::CostExt;

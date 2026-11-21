@@ -83,8 +83,8 @@ working and removes the glob-import clash.
 4. **Decimal storage.** `Decimal<K>` stores a `u64`. A `u32`-backed variant would halve
    open-list memory for small costs; add it (for example `Decimal<K, T = u64>`) only if a
    benchmark asks for it.
-5. **Decimal parsing.** There is no `FromStr` for `Decimal` yet (for PDDL `:action-costs`
-   with fractions). Default: add it when a parser crate needs it.
+5. **Decimal parsing.** `Decimal<K>` implements `FromStr` (exact, rejecting more than `K`
+   fraction digits), so pddl-rs can parse fractional `:action-costs` into it directly.
 6. **`Successors`.** Kept out because only heuristic-search has the callback shape. If
    multiobjective-search adopts the callback form and a `Successors::Cost` bound that admits
    vectors, the trait can move here without breaking anything.
