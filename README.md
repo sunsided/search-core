@@ -8,78 +8,110 @@
 [![License](https://img.shields.io/crates/l/search-core)](https://github.com/sunsided/search-core#license)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
-Small shared traits for planning and search crates.
+Common traits for heuristic search and planning: path costs, heuristics, goal tests and
+search budgets.
 
-A heuristic, goal test or budget written once against these traits works with every
-algorithm of the ecosystem. The crate is `no_std`, has no dependencies and holds only what
-at least two independent search crates need.
+Search algorithm crates use these traits as bounds, and users implement them once for their
+problem: a heuristic, goal test or budget written against `search-core` works with every
+algorithm that accepts it, whichever crate provides the algorithm. The crate is `no_std`,
+has no dependencies, and keeps to small, stable abstractions that are useful across many
+search algorithms.
 
-## Scope and status
-
-Implemented:
-
-- `Cost`: non-negative, totally ordered scalar path cost with `ZERO`, `saturating_add` and
-  `saturating_times`. Implemented for `u8`, `u16`, `u32` (the ecosystem default), `u64`,
-  `u128` and `usize`.
-- `Decimal<K>`: exact fixed-point decimal cost with scale `10^K` (`K <= 19`, checked at
-  compile time), stored as `u64`. `FromStr` parses `"3.25"` exactly and rejects more than `K`
-  fraction digits (so nothing rounds), signs and overflow (`ParseDecimalError`).
-- `NonNegF64` (feature `float`): an `f64` cost that rejects NaN and negative values, so it
-  can be `Ord`. Sound, but rounds; prefer integers or `Decimal` for exact results.
-- `CostExt`: `saturating_sub` and a possibly rounding `to_f64` (raw units for `Decimal`)
-  for priorities that subtract or divide costs, such as anytime and bidirectional searches.
-  A separate trait, implemented for every cost above.
-- `WideMul`: the product of two costs in a wider type (`u8`–`u64` into the next wider
-  integer, `usize` into `u128`, `u128` into a `(high, low)` 256-bit pair, `Decimal<K>` into
-  `u128`, `NonNegF64` into itself) and the distance `abs_diff`, exact for every integer
-  and `Decimal` input. For comparing cost ratios by cross-multiplication; a separate
-  trait, so `Cost` is unchanged.
-- `ExactArith` (feature `alloc`): converts a cost into an exact number type
-  (`ExactNumber`: `BigUint` for the integers and `Decimal`, `NonNegF64` itself) with `+`,
-  `*` and a distance, for sums of products and longer products. Also separate from `Cost`.
-  `NonNegF64` gains `Mul` (with `0 · ∞ = 0`).
-- `Heuristic<S, C = u32>` with `&mut self` workspaces, forwarding impls for `&mut H` and
-  `Box<H>` (feature `alloc`, default), `heuristic_fn` for closures, and the blind `Zero` (for every `Cost` and for `f64`).
-- `Goal<S>`, implemented for `Fn(&S) -> bool`.
-- `Budget<Stats>` over a crate's own statistics type, implemented for `FnMut(&Stats) -> bool`.
-
-Not included, on purpose: successor generation (`Successors`, `Graph`, `Mdp`), statistics
-and limits structs, and Pareto dominance. Their shapes differ between the sibling crates, or
-only one crate uses them. See [MIGRATION.md](https://github.com/sunsided/search-core/blob/main/MIGRATION.md) for how each sibling would adopt
-this crate.
-
-Pre-release: version 0.0.0 reserves the name, and the API may still change before 0.1.
-
-## Install
+## Installation
 
 ```sh
 cargo add search-core
 ```
 
+Or in `Cargo.toml`:
+
+```toml
+[dependencies]
+search-core = "0.1"
+```
+
+## Overview
+
+### Search interface
+
+| Item | Purpose |
+|---|---|
+| `Heuristic<S, C = u32>` | Cost-to-go estimate; `None` marks a dead end. Takes `&mut self`, so a heuristic can keep a workspace. Implemented for `&mut H`, `Box<H>` (feature `alloc`) and closures via `heuristic_fn`. |
+| `Zero` | The blind heuristic, for every `Cost` and for `f64`. Turns A* into Dijkstra's algorithm. |
+| `Goal<S>` | Goal test, implemented for `Fn(&S) -> bool`. |
+| `Budget<Stats>` | Early stopping over a search's own statistics type, implemented for `FnMut(&Stats) -> bool`. |
+
+### Costs
+
+| Item | Purpose |
+|---|---|
+| `Cost` | Non-negative, totally ordered scalar path cost with `ZERO`, `saturating_add` and `saturating_times`. Implemented for `u8` to `u128` and `usize`; `u32` is the default cost type of `Heuristic`. |
+| `Decimal<K>` | Exact fixed-point cost with `K` decimal places (`K <= 19`, checked at compile time), stored as `u64`. `FromStr` parses text such as `"3.25"` exactly and rejects anything that would need rounding (`ParseDecimalError`). |
+| `NonNegF64` | Feature `float`: an `f64` cost that rejects NaN and negative values, so it can be `Ord`. Rounds like `f64`; prefer integers or `Decimal` for exact results. |
+| `CostExt` | `saturating_sub` and a possibly rounding `to_f64`, for priorities that subtract or divide costs, as in anytime and bidirectional searches. |
+| `WideMul` | Exact product of two costs in a wider type, and the distance `abs_diff`, for comparing cost ratios by cross-multiplication. |
+| `ExactArith` | Feature `alloc`: converts a cost into an exact number type (`BigUint` for integers and `Decimal`) for sums of products and longer products. |
+
+`CostExt`, `WideMul` and `ExactArith` are separate from `Cost`, so a custom cost type only
+implements the capabilities the algorithms it is used with ask for. Implement `Cost` for
+your own type to use it with any algorithm generic over `C: Cost`.
+
+### Out of scope
+
+The crate defines no search algorithms and no problem representation. Successor generation
+(graphs, MDPs), search statistics and limit types, and Pareto dominance differ too much
+between algorithms to share, so they stay in the crates that implement the algorithms.
+[MIGRATION.md](https://github.com/sunsided/search-core/blob/main/MIGRATION.md) shows how
+existing search crates map their own traits onto this one.
+
 ## Example
 
+An algorithm states the capabilities it needs as trait bounds; callers pass any
+implementation:
+
 ```rust
-use search_core::{Cost, Decimal, Heuristic, heuristic_fn};
+use search_core::{Cost, Decimal, Goal, Heuristic, Zero, heuristic_fn};
 
-let mut h = heuristic_fn(|n: &u32| 10_u32.checked_sub(*n));
-assert_eq!(h.estimate(&3), Some(7));
+/// Picks the candidate with the lowest `g + h` that is not a dead end.
+fn most_promising<S, C: Cost>(candidates: &[(S, C)], h: &mut impl Heuristic<S, C>) -> Option<usize> {
+    candidates
+        .iter()
+        .enumerate()
+        .filter_map(|(i, (state, g))| h.estimate(state).map(|est| (g.saturating_add(est), i)))
+        .min()
+        .map(|(_, i)| i)
+}
 
-let cost = Decimal::<2>::from_raw(125) + Decimal::from_int(2).unwrap();
-assert_eq!(cost.to_string(), "3.25");
-assert!(Decimal::<2>::ZERO < cost);
+let candidates = [(4_u32, 3_u32), (7, 1), (12, 0)];
+
+// Distance to 10; states past 10 are dead ends.
+let mut to_ten = heuristic_fn(|n: &u32| 10_u32.checked_sub(*n));
+assert_eq!(most_promising(&candidates, &mut to_ten), Some(1));
+assert_eq!(most_promising(&candidates, &mut Zero), Some(2));
+
+let at_ten = |n: &u32| *n == 10;
+assert!(at_ten.is_goal(&10));
+
+// Exact decimal costs, parsed without rounding.
+let cost: Decimal<2> = "3.25".parse().unwrap();
+assert_eq!(cost.saturating_add(Decimal::from_int(1).unwrap()).to_string(), "4.25");
+assert!("3.125".parse::<Decimal<2>>().is_err());
 ```
 
 ## Features
 
-- `alloc` (default): `Heuristic` for `Box<H>`, and `ExactArith` with `BigUint`.
-- `float`: the checked float cost `NonNegF64`.
+| Feature | Default | Enables |
+|---|---|---|
+| `alloc` | yes | `Heuristic` for `Box<H>`; `ExactArith`, `ExactNumber` and `BigUint` |
+| `float` | no | The checked float cost `NonNegF64` |
 
-Without default features the crate needs neither `std` nor `alloc`.
+With `default-features = false`, the crate needs neither `std` nor `alloc`.
 
-## MSRV
+## Minimum supported Rust version
 
-Rust 1.85 (edition 2024). The minimum supported Rust version may be raised in a minor
-release when a dependency or a language feature calls for it.
+Rust 1.85 (edition 2024). The MSRV applies to the library; tests and benchmarks may need a
+newer toolchain. It may be raised in a minor release when a dependency or a language
+feature calls for it.
 
 ## Contributing
 
