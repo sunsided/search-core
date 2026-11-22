@@ -37,6 +37,8 @@ algorithm generic over `C: Cost` never rounds unless the caller picks a float co
   fronts, [mapf-search](https://github.com/sunsided/mapf-search) for multi-agent pathfinding
   or [stochastic-search](https://github.com/sunsided/stochastic-search) for MDPs and POMDPs.
 
+Part of the [planning and search crates](https://sunsided.github.io/planning-and-search/); see also this crate's [overview page](https://sunsided.github.io/planning-and-search/crates/search-core/).
+
 ## Installation
 
 ```sh
