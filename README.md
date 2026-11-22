@@ -17,6 +17,8 @@ algorithm that accepts it, whichever crate provides the algorithm. The crate is 
 has no dependencies, and keeps to small, stable abstractions that are useful across many
 search algorithms.
 
+Part of the [planning and search crates](https://sunsided.github.io/planning-and-search/); see also this crate's [overview page](https://sunsided.github.io/planning-and-search/crates/search-core/).
+
 ## Installation
 
 ```sh
