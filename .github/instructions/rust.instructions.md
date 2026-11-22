@@ -26,7 +26,7 @@ applyTo: "**/*.rs"
 - Every `Cost` impl is non-negative and totally ordered (`Ord`), and `saturating_add` and
   `saturating_times` never wrap. `WideMul` and `ExactArith` stay separate traits so `Cost`
   never grows; `WideMul` products and `BigUint` arithmetic are exact for integers and `Decimal`.
-- Public API changes go with a matching update to the README "Scope and status" list and,
+- Public API changes go with a matching update to the README "Overview" tables and,
   when a sibling crate's mapping changes, `MIGRATION.md` and the stand-ins in `tests/it/`.
 - Mermaid diagrams in doc comments must match the code they describe. Update them when the
   structure changes.
