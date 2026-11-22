@@ -1,7 +1,7 @@
 [package]
 name = "search-core"
 description = "Shared cost, heuristic, goal and budget traits for search and planning crates, with exact no_std cost types"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Markus Mayer <widemeadows@gmail.com>"]
