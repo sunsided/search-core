@@ -47,6 +47,21 @@ needs before it can be merged.
 - README and doc links use absolute URLs (crates.io renders READMEs outside GitHub).
   Mermaid diagrams are welcome.
 
+## Conventions for the planning crates
+
+The planning and search crates are used by game AI and simulations that run many searches
+per frame. A crate that offers a search checks these points (see the crate docs of
+search-core for the details):
+
+- Inputs (graphs, maps, games, models) are `Send + Sync` and free of interior mutability,
+  so one instance serves every thread.
+- Mutable query state lives in an explicit workspace that is reused across queries; a
+  warmed-up query allocates nothing.
+- Searches ask a `search_core::Budget` before each unit of work, with counters that start
+  from zero in every call, return a `search_core::Status`, and offer a resume call that
+  continues after `Status::OutOfBudget`.
+- Parallel algorithms live behind a `parallel` feature; the default build stays `no_std`.
+
 ## Branches
 
 This repository uses **GitHub Flow**:

@@ -62,6 +62,23 @@ search-core = "0.3"
 | `Zero` | The blind heuristic, for every `Cost` and for `f64`. Turns A* into Dijkstra's algorithm. |
 | `Goal<S>` | Goal test, implemented for `Fn(&S) -> bool`. |
 | `Budget<Stats>` | Early stopping over a search's own statistics type, implemented for `FnMut(&Stats) -> bool`. |
+| `Unlimited` | The budget that is never exhausted: the search runs to the end. |
+| `Status` | How one call of a time-sliced search ended: `Finished`, or `OutOfBudget` and ready to resume. Non-exhaustive. |
+
+### Many agents and parallel use
+
+Game AI and simulations run many searches per frame. The planning crates share four
+conventions for that, documented in full in the crate docs:
+
+- **Shareable inputs:** graphs, maps and models are `Send + Sync` without interior
+  mutability, so one instance serves every thread.
+- **Reusable workspaces:** each query mutates only an explicit workspace that is reused, so a
+  warmed-up query allocates nothing. One workspace per thread.
+- **Time slicing:** searches ask their `Budget` before each unit of work, report a `Status`,
+  and resume later, so work spreads across frames. The budget sees the counters of the
+  current call only.
+- **Opt-in parallelism:** parallel algorithms sit behind a `parallel` feature; the default
+  build stays `no_std`.
 
 ### Costs
 
@@ -83,8 +100,10 @@ your own type to use it with any algorithm generic over `C: Cost`.
 ### Out of scope
 
 The crate defines no search algorithms and no problem representation. Successor generation
-(graphs, MDPs), search statistics and limit types, and Pareto dominance differ too much
-between algorithms to share, so they stay in the crates that implement the algorithms.
+(graphs, MDPs), search statistics and limit types, resume calls, and Pareto dominance differ
+too much between algorithms to share, so they stay in the crates that implement the
+algorithms. Only the never-exhausted budget `Unlimited` and the `Status` of a time-sliced
+call are shared.
 [MIGRATION.md](https://github.com/sunsided/search-core/blob/main/MIGRATION.md) shows how
 existing search crates map their own traits onto this one.
 
