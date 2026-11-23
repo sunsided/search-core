@@ -2,8 +2,9 @@
 
 How the planning/search crates map their former local traits onto `search-core`, and what
 changed for their users. `tests/it/` has a stand-in module for heuristic-search (including
-`NonNegF64` costs and the weighted key), stochastic-search and multiobjective-search, so
-those mappings are known to compile under the orphan rules of a downstream crate.
+`NonNegF64` costs and the weighted key), stochastic-search, multiobjective-search and
+planning-qubo, so those mappings are known to compile under the orphan rules of a
+downstream crate.
 planning-heuristics needs no stand-in: its trait is identical.
 
 The general pattern: depend on `search-core`, delete the local trait, and re-export the
@@ -68,6 +69,15 @@ working and removes the glob-import clash.
 | `Graph` | stays local | appends to a `Vec` and has no action labels, unlike `Successors` |
 | goal predicate `P: Fn(&S) -> bool` | `Goal<S>` (optional) | non-breaking: every such closure already implements `Goal` |
 | `fractional::Signed` (wrapping 256-bit), `fractional::big` | `BigInt`, `BigUint` (feature `alloc`) | internal: Dinkelbach weights become `BigInt::from(den.exact() * c1.exact()) - BigInt::from(num.exact() * c2.exact())`; exact without a width bound, at the cost of an allocation per weight; in hot loops use the in-place `sum += &weight` and by-reference `&a + &b` forms to avoid clones |
+
+## planning-qubo
+
+| Local item | search-core | Change |
+|---|---|---|
+| `Budget` | `Budget<Stats>` | none; already the shared trait |
+| `Unlimited` | `Unlimited` | none; delete the local one and `pub use search_core::Unlimited` |
+| `Status` (`Finished`, `OutOfBudget`) | `Status` | **break**: the shared enum is `#[non_exhaustive]`, so exhaustive matches outside the crate need a `_` arm |
+| `Sampler` (`sample`, `resume`), `Run`, stats types | stay local | the resume call is crate-specific |
 
 ## Open questions
 
