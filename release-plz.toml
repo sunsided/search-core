@@ -15,9 +15,13 @@ pr_branch_prefix = "release/"
 # Release PR title is imperative too; the default is "chore: release ...". package/version are
 # set only for a single package or one shared version, hence the guards.
 pr_name = "Release{% if package %} {{ package }}{% endif %}{% if version %} v{{ version }}{% endif %}"
-# Commits are imperative ("Add X", "Fix Y"), not Conventional Commits: map verbs to bumps.
-custom_minor_increment_regex = "^(Add|Introduce|Support|Allow|Implement|Expose)\\b"
-custom_major_increment_regex = "(?m)^BREAKING CHANGE:|^Break\\b"
+# Commits are imperative ("Add X", "Fix Y"), not Conventional Commits, so release-plz sees no
+# feature or breaking type and bumps the patch by default. While the crate is 0.x, a minor bump
+# is the breaking bump (Cargo SemVer): only breaking commits may match the minor regex, and the
+# major regex stays unset because a match jumps straight to 1.0.0, even from 0.x. API breaks
+# also bump the minor through semver_check. From 1.0 on, map the "Add ..." verbs to minor and
+# the breaking pattern to major instead.
+custom_minor_increment_regex = "(?m)^BREAKING CHANGE:|^Break\\b"
 # One public crate, so tags are the default "v{{ version }}".
 
 [changelog]
